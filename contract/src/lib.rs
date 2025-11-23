@@ -28,6 +28,7 @@ impl Contract for AuctionContract {
     type Message = Message;
     type InstantiationArgument = ();
     type Parameters = ();
+    type EventValue = ();
     
     // 1. Load the contract state
     async fn load(runtime: ContractRuntime<Self>) -> Self {
