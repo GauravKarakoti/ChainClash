@@ -2,14 +2,12 @@
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use linera_sdk::{
-    linera_base_types::WithServiceAbi,
     views::{View, RootView},
     Service, ServiceRuntime,
 };
+use linera_sdk::abi::WithServiceAbi;
 use std::sync::Arc;
 
-// You need to ensure `state.rs` and `auction.rs` are accessible here too.
-// Often done by declaring them as modules if files exist in service/src too.
 #[path = "../../contract/src/state.rs"]
 mod state;
 #[path = "../../contract/src/auction.rs"]

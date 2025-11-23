@@ -6,10 +6,12 @@ mod state;
 use self::auction::{Auction, AuctionError, Message, Operation, Response};
 use self::state::AuctionState;
 use linera_sdk::{
-    linera_base_types::{Amount, Owner, WithContractAbi},
-    views::{View},
+    base::Owner,
+    views::{View, RootView},
     Contract, ContractRuntime,
 };
+use linera_sdk::linera_base_types::Amount;
+use linera_sdk::abi::WithContractAbi;
 
 pub struct AuctionContract {
     state: AuctionState,
@@ -24,12 +26,10 @@ impl WithContractAbi for AuctionContract {
 
 #[async_trait::async_trait]
 impl Contract for AuctionContract {
-    type Error = AuctionError;
-    type Storage = ViewState<AuctionState>; // Note: In 0.15 RootView is usually loaded directly
     type Message = Message;
     type InstantiationArgument = ();
     type Parameters = ();
-
+    
     // 1. Load the contract state
     async fn load(runtime: ContractRuntime<Self>) -> Self {
         let state = AuctionState::load(runtime.root_view_storage_context())
@@ -44,16 +44,17 @@ impl Contract for AuctionContract {
     }
 
     // 3. Execute Operation (Transactions)
+    // Note: Returns Response directly; errors must panic (revert)
     async fn execute_operation(
         &mut self,
         operation: Self::Operation,
-    ) -> Result<Self::Response, Self::Error> {
+    ) -> Self::Response {
         match operation {
             Operation::CreateAuction { item, duration } => {
-                self.create_auction(item, duration).await
+                self.create_auction(item, duration).await.expect("Failed to create auction")
             }
             Operation::PlaceBid { auction_id, amount } => {
-                self.place_bid(auction_id, amount).await
+                self.place_bid(auction_id, amount).await.expect("Failed to place bid")
             }
         }
     }
@@ -107,9 +108,10 @@ impl AuctionContract {
             .ok_or(AuctionError::AuctionNotFound)?;
 
         let bidder = self.runtime.authenticated_signer().ok_or(AuctionError::Unauthorized)?;
+        let current_time = self.runtime.system_time().micros();
         
         // Check if auction is active
-        if !auction.is_active() {
+        if !auction.is_active(current_time) {
             return Err(AuctionError::AuctionEnded);
         }
 
@@ -129,13 +131,6 @@ impl AuctionContract {
         self.state.auctions.insert(&auction_id, auction).await?;
 
         // Broadcast bid
-        let message = Message::BidPlaced {
-            auction_id,
-            bidder,
-            amount,
-        };
-
-        // Send to other chains (simplified: broadcast to current chain effectively)
         // In a real app, you would send this to subscriber chains
         
         Ok(Response::BidPlaced { auction_id, amount })
@@ -148,7 +143,8 @@ impl AuctionContract {
         amount: Amount,
     ) -> Result<(), AuctionError> {
         if let Some(mut auction) = self.state.auctions.get(&auction_id).await? {
-            if amount > auction.highest_bid && auction.is_active() {
+            let current_time = self.runtime.system_time().micros();
+            if amount > auction.highest_bid && auction.is_active(current_time) {
                 auction.highest_bid = amount;
                 auction.highest_bidder = bidder;
                 self.state.auctions.insert(&auction_id, auction).await?;

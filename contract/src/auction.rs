@@ -1,9 +1,11 @@
 use linera_sdk::{
-    linera_base_types::{Amount, Owner},
-    ContractAbi, ServiceAbi,
+    base::Owner,
+    abi::Abi,
 };
+use linera_sdk::linera_base_types::Amount;
+use linera_sdk::abi::ContractAbi;
+use linera_sdk::abi::ServiceAbi;
 use serde::{Deserialize, Serialize};
-use linera_sdk::abi::Abi;  
 
 #[derive(Debug, Clone, Serialize, Deserialize, async_graphql::SimpleObject)]
 pub struct Auction {
@@ -18,13 +20,12 @@ pub struct Auction {
 }
 
 impl Auction {
-    pub fn is_active(&self) -> bool {
-        self.status == AuctionStatus::Active && self.get_time_remaining() > 0
+    // Pass current_time explicitly to avoid dependency on system APIs here
+    pub fn is_active(&self, current_time: u64) -> bool {
+        self.status == AuctionStatus::Active && self.get_time_remaining(current_time) > 0
     }
 
-    pub fn get_time_remaining(&self) -> u64 {
-        // Note: System time access in contract logic is deterministic in Linera
-        let current_time = linera_sdk::sys::current_system_time().micros();
+    pub fn get_time_remaining(&self, current_time: u64) -> u64 {
         if current_time >= self.start_time + self.duration {
             0
         } else {
