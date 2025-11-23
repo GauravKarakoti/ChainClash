@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 set -eu
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # 1. Start Local Network
 echo "Starting Linera Local Net..."
