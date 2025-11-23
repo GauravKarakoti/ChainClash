@@ -1,4 +1,4 @@
-use linera_sdk::linera_base_types::Owner;
+use linera_sdk::linera_base_types::AccountOwner;
 use linera_sdk::linera_base_types::Amount;
 use linera_sdk::abi::ContractAbi;
 use linera_sdk::abi::ServiceAbi;
@@ -11,8 +11,8 @@ pub struct Auction {
     pub start_time: u64,
     pub duration: u64,
     pub highest_bid: Amount,
-    pub highest_bidder: Owner,
-    pub active_bidders: Vec<Owner>,
+    pub highest_bidder: AccountOwner,
+    pub active_bidders: Vec<AccountOwner>,
     pub status: AuctionStatus,
 }
 
@@ -46,14 +46,14 @@ pub enum Operation {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Message {
-    BidPlaced { auction_id: u64, bidder: Owner, amount: Amount },
+    BidPlaced { auction_id: u64, bidder: AccountOwner, amount: Amount },
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum Response {
     AuctionCreated { auction_id: u64 },
     BidPlaced { auction_id: u64, amount: Amount },
-    AuctionEnded { auction_id: u64, winner: Owner },
+    AuctionEnded { auction_id: u64, winner: AccountOwner },
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -84,5 +84,4 @@ impl ContractAbi for AuctionAbi {
 impl ServiceAbi for AuctionAbi {
     type Query = async_graphql::Request;
     type QueryResponse = async_graphql::Response;
-    type Parameters = ();
 }

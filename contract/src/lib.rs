@@ -6,7 +6,7 @@ mod state;
 use self::auction::{Auction, AuctionError, Message, Operation, Response};
 use self::state::AuctionState;
 use linera_sdk::{
-    linera_base_types::Owner, // Fixed import
+    linera_base_types::{AccountOwner, CryptoHash, UserOwner},
     views::{View, RootView},
     Contract, ContractRuntime,
 };
@@ -28,7 +28,6 @@ impl Contract for AuctionContract {
     type Message = Message;
     type InstantiationArgument = ();
     type Parameters = ();
-    type EventValue = (); // Added missing type definition
     
     // 1. Load the contract state
     async fn load(runtime: ContractRuntime<Self>) -> Self {
@@ -83,13 +82,16 @@ impl AuctionContract {
         let auction_id = (self.state.auctions.count().await? as u64) + 1;
         let start_time = self.runtime.system_time().micros();
         
+        // Create a placeholder owner (all zeros)
+        let placeholder_owner = AccountOwner::User(UserOwner(CryptoHash::from([0u8; 32])));
+
         let auction = Auction {
             auction_id,
             item,
             start_time,
             duration,
             highest_bid: Amount::ZERO,
-            highest_bidder: Owner::from([0; 32]), // Placeholder owner
+            highest_bidder: placeholder_owner,
             active_bidders: Vec::new(),
             status: auction::AuctionStatus::Active,
         };
@@ -141,7 +143,7 @@ impl AuctionContract {
     async fn process_bid_message(
         &mut self,
         auction_id: u64,
-        bidder: Owner,
+        bidder: AccountOwner,
         amount: Amount,
     ) -> Result<(), AuctionError> {
         if let Some(mut auction) = self.state.auctions.get(&auction_id).await? {
@@ -149,7 +151,6 @@ impl AuctionContract {
             if amount > auction.highest_bid && auction.is_active(current_time) {
                 auction.highest_bid = amount;
                 auction.highest_bidder = bidder;
-                // insert is synchronous, removed .await
                 self.state.auctions.insert(&auction_id, auction)?;
             }
         }
