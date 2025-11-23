@@ -14,6 +14,11 @@ export LINERA_FAUCET_URL=http://localhost:8080
 linera wallet init --faucet="$LINERA_FAUCET_URL"
 linera wallet request-chain --faucet="$LINERA_FAUCET_URL"
 
+# --- NEW: Capture the Chain ID ---
+# We grab the first chain ID from the wallet, which is the default chain.
+CHAIN_ID=$(linera wallet show | awk 'NR>1 {print $1; exit}')
+echo "Using Chain ID: $CHAIN_ID"
+
 # 3. Build Backend (ChainClash)
 echo "Building ChainClash Contracts..."
 cargo build --release --target wasm32-unknown-unknown
@@ -26,15 +31,32 @@ echo "ChainClash App ID: $APP_ID"
 # 5. Run Linera Service (Backend)
 # We use port 8081 to avoid conflict with the faucet on 8080
 echo "Starting Linera Service on http://localhost:8081..."
+# Note: Linera service usually binds to 127.0.0.1 by default. 
+# If you are running this inside Docker and accessing from the host, 
+# you might need to ensure it listens on 0.0.0.0.
+# However, your 404 error suggests it IS reachable, just the path was wrong.
 linera service --port 8081 &
 
 # 6. Run Frontend
 echo "Setting up Frontend..."
 cd frontend
 
-# Update graphql.js to point to the service on port 8081 instead of 8080
+# --- NEW: Update graphql.js with the FULL Application URL ---
+# Construct the correct endpoint for your specific application
+APP_URL="http://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID"
+
 if [ -f "src/utils/graphql.js" ]; then
-    sed -i 's/localhost:8080/localhost:8081/g' src/utils/graphql.js
+    # We replace the hardcoded localhost:8081/graphql with our dynamic APP_URL
+    # Note: We match the original string 'http://localhost:8081/graphql' 
+    # (or 8080 if not yet sed-ed, but let's be safe and replace the whole line or variable)
+    
+    # First, ensure we are starting fresh or replace the known default string
+    sed -i "s|http://localhost:8081/graphql|$APP_URL|g" src/utils/graphql.js
+    sed -i "s|ws://localhost:8081/graphql|ws://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID|g" src/utils/graphql.js
+    
+    # Fallback: if the file still has 8080 (from fresh checkout)
+    sed -i "s|http://localhost:8080/graphql|$APP_URL|g" src/utils/graphql.js
+    sed -i "s|ws://localhost:8080/graphql|ws://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID|g" src/utils/graphql.js
 fi
 
 npm install
