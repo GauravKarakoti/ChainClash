@@ -6,11 +6,10 @@ mod state;
 use self::auction::{Auction, AuctionError, Message, Operation, Response};
 use self::state::AuctionState;
 use linera_sdk::{
-    linera_base_types::{AccountOwner, CryptoHash, UserOwner},
+    linera_base_types::{AccountOwner, Amount},
     views::{View, RootView},
     Contract, ContractRuntime,
 };
-use linera_sdk::linera_base_types::Amount;
 use linera_sdk::abi::WithContractAbi;
 
 pub struct AuctionContract {
@@ -83,21 +82,18 @@ impl AuctionContract {
         let auction_id = (self.state.auctions.count().await? as u64) + 1;
         let start_time = self.runtime.system_time().micros();
         
-        // Create a placeholder owner (all zeros)
-        let placeholder_owner = AccountOwner::User(UserOwner(CryptoHash::from([0u8; 32])));
-
         let auction = Auction {
             auction_id,
             item,
             start_time,
             duration,
             highest_bid: Amount::ZERO,
-            highest_bidder: placeholder_owner,
+            highest_bidder: None, // Logic updated here
             active_bidders: Vec::new(),
             status: auction::AuctionStatus::Active,
         };
 
-        // insert is synchronous, removed .await
+        // insert is synchronous
         self.state.auctions.insert(&auction_id, auction)?;
         
         Ok(Response::AuctionCreated { auction_id })
@@ -126,13 +122,13 @@ impl AuctionContract {
 
         // Update state
         auction.highest_bid = amount;
-        auction.highest_bidder = bidder;
+        auction.highest_bidder = Some(bidder); // Wrapped in Some
         
         if !auction.active_bidders.contains(&bidder) {
             auction.active_bidders.push(bidder);
         }
 
-        // insert is synchronous, removed .await
+        // insert is synchronous
         self.state.auctions.insert(&auction_id, auction)?;
 
         // Broadcast bid
@@ -151,7 +147,7 @@ impl AuctionContract {
             let current_time = self.runtime.system_time().micros();
             if amount > auction.highest_bid && auction.is_active(current_time) {
                 auction.highest_bid = amount;
-                auction.highest_bidder = bidder;
+                auction.highest_bidder = Some(bidder); // Wrapped in Some
                 self.state.auctions.insert(&auction_id, auction)?;
             }
         }

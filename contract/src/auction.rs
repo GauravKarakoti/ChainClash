@@ -11,7 +11,7 @@ pub struct Auction {
     pub start_time: u64,
     pub duration: u64,
     pub highest_bid: Amount,
-    pub highest_bidder: AccountOwner,
+    pub highest_bidder: Option<AccountOwner>, // Changed to Option
     pub active_bidders: Vec<AccountOwner>,
     pub status: AuctionStatus,
 }
