@@ -1,7 +1,4 @@
-use linera_sdk::{
-    base::Owner,
-    abi::Abi,
-};
+use linera_sdk::linera_base_types::Owner;
 use linera_sdk::linera_base_types::Amount;
 use linera_sdk::abi::ContractAbi;
 use linera_sdk::abi::ServiceAbi;
@@ -88,9 +85,4 @@ impl ServiceAbi for AuctionAbi {
     type Query = async_graphql::Request;
     type QueryResponse = async_graphql::Response;
     type Parameters = ();
-}
-
-impl Abi for AuctionAbi {
-    type ContractAbi = AuctionAbi;
-    type ServiceAbi = AuctionAbi;
 }

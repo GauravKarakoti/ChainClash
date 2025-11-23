@@ -6,7 +6,7 @@ mod state;
 use self::auction::{Auction, AuctionError, Message, Operation, Response};
 use self::state::AuctionState;
 use linera_sdk::{
-    base::Owner,
+    linera_base_types::Owner, // Fixed import
     views::{View, RootView},
     Contract, ContractRuntime,
 };
@@ -24,11 +24,11 @@ impl WithContractAbi for AuctionContract {
     type Abi = auction::AuctionAbi;
 }
 
-#[async_trait::async_trait]
 impl Contract for AuctionContract {
     type Message = Message;
     type InstantiationArgument = ();
     type Parameters = ();
+    type EventValue = (); // Added missing type definition
     
     // 1. Load the contract state
     async fn load(runtime: ContractRuntime<Self>) -> Self {
@@ -44,7 +44,6 @@ impl Contract for AuctionContract {
     }
 
     // 3. Execute Operation (Transactions)
-    // Note: Returns Response directly; errors must panic (revert)
     async fn execute_operation(
         &mut self,
         operation: Self::Operation,
@@ -80,7 +79,8 @@ impl AuctionContract {
         item: String,
         duration: u64,
     ) -> Result<Response, AuctionError> {
-        let auction_id = self.state.auctions.count().await? + 1;
+        // Cast usize to u64
+        let auction_id = (self.state.auctions.count().await? as u64) + 1;
         let start_time = self.runtime.system_time().micros();
         
         let auction = Auction {
@@ -94,7 +94,8 @@ impl AuctionContract {
             status: auction::AuctionStatus::Active,
         };
 
-        self.state.auctions.insert(&auction_id, auction).await?;
+        // insert is synchronous, removed .await
+        self.state.auctions.insert(&auction_id, auction)?;
         
         Ok(Response::AuctionCreated { auction_id })
     }
@@ -128,7 +129,8 @@ impl AuctionContract {
             auction.active_bidders.push(bidder);
         }
 
-        self.state.auctions.insert(&auction_id, auction).await?;
+        // insert is synchronous, removed .await
+        self.state.auctions.insert(&auction_id, auction)?;
 
         // Broadcast bid
         // In a real app, you would send this to subscriber chains
@@ -147,7 +149,8 @@ impl AuctionContract {
             if amount > auction.highest_bid && auction.is_active(current_time) {
                 auction.highest_bid = amount;
                 auction.highest_bidder = bidder;
-                self.state.auctions.insert(&auction_id, auction).await?;
+                // insert is synchronous, removed .await
+                self.state.auctions.insert(&auction_id, auction)?;
             }
         }
         Ok(())

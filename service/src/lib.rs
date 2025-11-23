@@ -2,7 +2,7 @@
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use linera_sdk::{
-    views::{View, RootView},
+    views::View,
     Service, ServiceRuntime,
 };
 use linera_sdk::abi::WithServiceAbi;
