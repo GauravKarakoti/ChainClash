@@ -1,10 +1,11 @@
 use linera_sdk::{
-    base::{Amount, Owner, ChainId},
-    graphql::GraphQLMutationRoot,
+    linera_base_types::{Amount, Owner},
+    ContractAbi, ServiceAbi,
 };
 use serde::{Deserialize, Serialize};
+use linera_sdk::abi::Abi;  
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, async_graphql::SimpleObject)]
 pub struct Auction {
     pub auction_id: u64,
     pub item: String,
@@ -22,7 +23,8 @@ impl Auction {
     }
 
     pub fn get_time_remaining(&self) -> u64 {
-        let current_time = linera_sdk::base::system_api::current_system_time();
+        // Note: System time access in contract logic is deterministic in Linera
+        let current_time = linera_sdk::sys::current_system_time().micros();
         if current_time >= self.start_time + self.duration {
             0
         } else {
@@ -31,52 +33,63 @@ impl Auction {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Copy, async_graphql::Enum)]
 pub enum AuctionStatus {
     Active,
     Ended,
     Cancelled,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub enum Operation {
     CreateAuction { item: String, duration: u64 },
     PlaceBid { auction_id: u64, amount: Amount },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub enum Message {
     BidPlaced { auction_id: u64, bidder: Owner, amount: Amount },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub enum Response {
     AuctionCreated { auction_id: u64 },
     BidPlaced { auction_id: u64, amount: Amount },
     AuctionEnded { auction_id: u64, winner: Owner },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, thiserror::Error)]
 pub enum AuctionError {
+    #[error("Auction not found")]
     AuctionNotFound,
+    #[error("Auction ended")]
     AuctionEnded,
+    #[error("Bid too low")]
     BidTooLow,
+    #[error("Insufficient balance")]
     InsufficientBalance,
+    #[error("Unauthorized")]
     Unauthorized,
-    StorageError,
+    #[error("Storage error")]
+    StorageError(#[from] linera_sdk::views::ViewError),
+    #[error("JSON error")]
+    JsonError(#[from] serde_json::Error),
 }
 
-impl From<linera_sdk::views::ViewError> for AuctionError {
-    fn from(_: linera_sdk::views::ViewError) -> Self {
-        AuctionError::StorageError
-    }
-}
-
-// ABIs for Linera protocol
 pub struct AuctionAbi;
 
-impl linera_sdk::abi::Abi for AuctionAbi {
+impl ContractAbi for AuctionAbi {
     type Operation = Operation;
-    type Message = Message;
     type Response = Response;
+}
+
+impl ServiceAbi for AuctionAbi {
+    type Query = async_graphql::Request;
+    type QueryResponse = async_graphql::Response;
+    type Parameters = ();
+}
+
+impl Abi for AuctionAbi {
+    type ContractAbi = AuctionAbi;
+    type ServiceAbi = AuctionAbi;
 }

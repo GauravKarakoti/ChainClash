@@ -1,7 +1,7 @@
-use linera_sdk::views::{View, MapView, RootView};
-use serde::{Deserialize, Serialize};
+use linera_sdk::views::{linera_views, MapView, RootView, ViewStorageContext};
 
-#[derive(RootView, Serialize, Deserialize)]
+#[derive(RootView, async_graphql::SimpleObject)]
+#[view(context = ViewStorageContext)]
 pub struct AuctionState {
     pub auctions: MapView<u64, super::auction::Auction>,
 }
