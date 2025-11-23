@@ -1,0 +1,17 @@
+contract_bytecodes:
+  - "target/wasm32-unknown-unknown/release/contract.wasm"
+service_bytecodes:
+  - "target/wasm32-unknown-unknown/release/service.wasm"
+
+contract:
+  type: "bytecode"
+  path: "target/wasm32-unknown-unknown/release/contract.wasm"
+
+service:
+  type: "bytecode" 
+  path: "target/wasm32-unknown-unknown/release/service.wasm"
+
+dependencies:
+  linera-sdk: "0.15.2"
+  async-trait: "0.1"
+  serde: "1.0"
