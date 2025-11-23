@@ -16,7 +16,7 @@ linera wallet request-chain --faucet="$LINERA_FAUCET_URL"
 
 # --- NEW: Capture the Chain ID ---
 # We grab the first chain ID from the wallet, which is the default chain.
-CHAIN_ID=$(linera wallet show | awk 'NR>1 {print $1; exit}')
+CHAIN_ID=$(linera wallet show | grep -oE "[0-9a-fA-F]{64}" | head -n 1)
 echo "Using Chain ID: $CHAIN_ID"
 
 # 3. Build Backend (ChainClash)
