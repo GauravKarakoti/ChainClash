@@ -61,12 +61,17 @@ export class LineraAdapter {
           }
         }
 
-        const faucet = await new Faucet(rpcUrl);
+        // Faucet constructor is synchronous
+        const faucet = new Faucet(rpcUrl);
         const wallet = await faucet.createWallet();
         const chainId = await faucet.claimChain(wallet, address);
 
-        const signer = await new DynamicSigner(dynamicWallet);
-        const client = await new Client(wallet, signer);
+        // DynamicSigner constructor is synchronous (assuming standard class)
+        const signer = new DynamicSigner(dynamicWallet);
+        
+        // Fixed: Added `false` for skip_process_inbox and removed `await`
+        const client = new Client(wallet, signer, false);
+        
         console.log("✅ Linera wallet created successfully!");
 
         this.provider = {

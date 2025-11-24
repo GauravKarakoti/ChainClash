@@ -1,5 +1,28 @@
-import { useQuery, useSubscription, gql } from '@apollo/client';
+import { useQuery, gql } from '@apollo/client';
 import { useLineraWallet } from './useLineraWallet';
+
+export interface Auction {
+  auctionId: string;
+  item: string;
+  startTime: string;
+  duration: string;
+  highestBid: string;
+  highestBidder: string;
+  activeBidders: string[];
+  status: string;
+  timeRemaining: number;
+  isActive: boolean;
+}
+
+export interface ActiveAuction {
+  auctionId: string;
+  item: string;
+  highestBid: string;
+  highestBidder: string;
+  timeRemaining: number;
+  isActive: boolean;
+  activeBidders?: string[];
+}
 
 export const useLineraClient = () => {
   const { wallet } = useLineraWallet();
@@ -53,7 +76,7 @@ export const useLineraClient = () => {
     }
   `;
 
-  const useAuction = (auctionId) => {
+  const useAuction = (auctionId: string | null) => {
     const { data, loading, error, subscribeToMore } = useQuery(GET_AUCTION, {
       variables: { auctionId },
       skip: !auctionId,
@@ -81,7 +104,7 @@ export const useLineraClient = () => {
     };
 
     return {
-      auction: data?.auction,
+      auction: data?.auction as Auction | undefined,
       loading,
       error,
       subscribeToBids,
@@ -94,13 +117,13 @@ export const useLineraClient = () => {
     });
 
     return {
-      activeAuctions: data?.activeAuctions || [],
+      activeAuctions: (data?.activeAuctions || []) as ActiveAuction[],
       loading,
       error,
     };
   };
 
-  const placeBid = async (auctionId, amount) => {
+  const placeBid = async (auctionId: string, amount: string) => {
     if (!wallet) throw new Error('Wallet not connected');
 
     try {

@@ -2,7 +2,11 @@ import React from 'react';
 import { useLineraClient } from '../hooks/useLineraClient';
 import './AuctionList.css';
 
-const AuctionList = ({ onSelectAuction }) => {
+interface AuctionListProps {
+  onSelectAuction: (auctionId: string) => void;
+}
+
+const AuctionList: React.FC<AuctionListProps> = ({ onSelectAuction }) => {
   const { useActiveAuctions } = useLineraClient();
   const { activeAuctions, loading, error } = useActiveAuctions();
 

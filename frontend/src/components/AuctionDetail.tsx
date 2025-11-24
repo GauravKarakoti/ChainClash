@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type FormEvent } from 'react';
 import { useLineraClient } from '../hooks/useLineraClient';
 import { useLineraWallet } from '../hooks/useLineraWallet';
 import './AuctionDetail.css';
 
-const AuctionDetail = ({ auctionId, onBack }) => {
+interface AuctionDetailProps {
+  auctionId: string;
+  onBack: () => void;
+}
+
+const AuctionDetail: React.FC<AuctionDetailProps> = ({ auctionId, onBack }) => {
   const { useAuction, placeBid } = useLineraClient();
   const { wallet } = useLineraWallet();
   const { auction, loading, error, subscribeToBids } = useAuction(auctionId);
   
-  const [bidAmount, setBidAmount] = useState('');
-  const [placingBid, setPlacingBid] = useState(false);
-  const [bidError, setBidError] = useState('');
+  const [bidAmount, setBidAmount] = useState<string>('');
+  const [placingBid, setPlacingBid] = useState<boolean>(false);
+  const [bidError, setBidError] = useState<string>('');
 
   useEffect(() => {
     if (auctionId && subscribeToBids) {
@@ -18,7 +23,7 @@ const AuctionDetail = ({ auctionId, onBack }) => {
     }
   }, [auctionId, subscribeToBids]);
 
-  const handleBid = async (e) => {
+  const handleBid = async (e: FormEvent) => {
     e.preventDefault();
     
     if (!wallet) {
@@ -43,14 +48,14 @@ const AuctionDetail = ({ auctionId, onBack }) => {
       await placeBid(auctionId, bidAmount);
       setBidAmount('');
       // Bid success will be reflected via subscription
-    } catch (err) {
+    } catch (err: any) {
       setBidError(err.message || 'Failed to place bid');
     } finally {
       setPlacingBid(false);
     }
   };
 
-  const formatAddress = (address) => {
+  const formatAddress = (address?: string) => {
     if (!address) return 'None';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };

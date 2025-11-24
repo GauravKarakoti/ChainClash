@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { apolloClient } from './utils/graphql';
 import WalletConnection from './components/WalletConnection';
@@ -7,9 +7,9 @@ import AuctionDetail from './components/AuctionDetail';
 import './App.css';
 
 function App() {
-  const [selectedAuction, setSelectedAuction] = useState(null);
+  const [selectedAuction, setSelectedAuction] = useState<string | null>(null);
 
-  const handleSelectAuction = (auctionId) => {
+  const handleSelectAuction = (auctionId: string) => {
     setSelectedAuction(auctionId);
   };
 
