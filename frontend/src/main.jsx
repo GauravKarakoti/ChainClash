@@ -1,10 +1,21 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 
-createRoot(document.getElementById('root')).render(
+import App from "./App";
+import "./index.css";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <DynamicContextProvider
+      theme="auto"
+      settings={{
+        environmentId: import.meta.env.VITE_DYNAMIC_ENVIRONMENT_ID,
+        walletConnectors: [EthereumWalletConnectors],
+      }}
+    >
+      <App />
+    </DynamicContextProvider>
+  </StrictMode>
+);

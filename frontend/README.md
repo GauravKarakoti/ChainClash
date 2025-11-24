@@ -1,16 +1,56 @@
-# React + Vite
+# my-realtime-linera-app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project was generated with [Create Dynamic App](https://github.com/dynamic-labs/create-dynamic-app).
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Set up your environment variables
 
-## React Compiler
+Copy the `.env.example` file to `.env`:
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+```bash
+cp .env.example .env
+```
 
-## Expanding the ESLint configuration
+Update the `VITE_DYNAMIC_ENVIRONMENT_ID` in the `.env` file with your own environment ID from [Dynamic Dashboard](https://app.dynamic.xyz).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Install dependencies
+
+```bash
+npm install
+# or
+yarn
+# or
+pnpm install
+# or
+bun install
+```
+
+### Development
+
+Run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) to view your application in the browser.
+
+## Available Scripts
+
+- `dev`: Starts the development server
+- `build`: Builds the app for production
+- `preview`: Previews the production build locally
+- `lint`: Lints the codebase
+
+## Learn More
+
+- [Dynamic Documentation](https://docs.dynamic.xyz)
+- [Vite Documentation](https://vitejs.dev)
+- [React Documentation](https://react.dev)

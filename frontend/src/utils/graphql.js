@@ -4,8 +4,8 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 
 // Linera GraphQL endpoint for Testnet Conway
-const LINERA_GRAPHQL_HTTP = 'http://localhost:8081/graphql';
-const LINERA_GRAPHQL_WS = 'http://localhost:8080/graphql';
+const LINERA_GRAPHQL_HTTP = 'http://localhost:8081/chains/b100d78f7204eeeacb06a4ca341fbe2cb10e0eebcc732d714552b1d0e5b0f083/applications/4b8eb81317a693dc922669aeb258a9d1548473f621ba9950d07e00098359b8b8';
+const LINERA_GRAPHQL_WS = 'http://localhost:8081/chains/b100d78f7204eeeacb06a4ca341fbe2cb10e0eebcc732d714552b1d0e5b0f083/applications/4b8eb81317a693dc922669aeb258a9d1548473f621ba9950d07e00098359b8b8';
 
 const httpLink = createHttpLink({
   uri: LINERA_GRAPHQL_HTTP,
