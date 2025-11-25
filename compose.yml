@@ -7,5 +7,5 @@ services:
     - "8081:8081"   # Your App Service (GraphiQL & API)
     - "9001:9001"   # Shard proxy
     - "13001:13001" # Shard
-    volumes:
-    - .:/build
+    # volumes:
+    # - .:/build
