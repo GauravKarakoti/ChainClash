@@ -15,20 +15,15 @@ linera wallet init --faucet="$LINERA_FAUCET_URL"
 linera wallet request-chain --faucet="$LINERA_FAUCET_URL"
 
 # --- NEW: Capture the Chain ID ---
-# We grab the first chain ID from the wallet, which is the default chain.
 CHAIN_ID=$(linera wallet show | grep -oE "[0-9a-fA-F]{64}" | head -n 1)
 echo "Using Chain ID: $CHAIN_ID"
 
-# 3. Build Backend (ChainClash)
-echo "Building ChainClash Contracts..."
-cargo build --release --target wasm32-unknown-unknown
-
-# 4. Publish and Create Application
+# 3. Publish and Create Application
 echo "Publishing Application..."
 APP_ID=$(linera publish-and-create target/wasm32-unknown-unknown/release/contract.wasm target/wasm32-unknown-unknown/release/service.wasm)
 echo "ChainClash App ID: $APP_ID"
 
-# 5. Run Linera Service (Backend)
+# 4. Run Linera Service (Backend)
 # We use port 8081 to avoid conflict with the faucet on 8080
 echo "Starting Linera Service on http://localhost:8081..."
 # Note: Linera service usually binds to 127.0.0.1 by default. 
@@ -37,7 +32,7 @@ echo "Starting Linera Service on http://localhost:8081..."
 # However, your 404 error suggests it IS reachable, just the path was wrong.
 linera service --port 8081 &
 
-# 6. Run Frontend
+# 5. Run Frontend
 echo "Setting up Frontend..."
 cd frontend
 

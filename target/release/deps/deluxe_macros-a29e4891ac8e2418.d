@@ -1,0 +1,13 @@
+/build/target/release/deps/libdeluxe_macros-a29e4891ac8e2418.so: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/lib.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/util.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_attributes.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_meta_item.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/field.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/struct.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/variant.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/enum.rs
+
+/build/target/release/deps/deluxe_macros-a29e4891ac8e2418.d: /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/lib.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/util.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_attributes.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_meta_item.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/field.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/struct.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/variant.rs /usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/enum.rs
+
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/lib.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/util.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_attributes.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/parse_meta_item.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/field.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/struct.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/variant.rs:
+/usr/local/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deluxe-macros-0.5.0/types/enum.rs:
