@@ -40,18 +40,11 @@ cd frontend
 # Construct the correct endpoint for your specific application
 APP_URL="http://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID"
 
-if [ -f "src/utils/graphql.ts" ]; then
-    # We replace the hardcoded localhost:8081/graphql with our dynamic APP_URL
-    # Note: We match the original string 'http://localhost:8081/graphql' 
-    # (or 8080 if not yet sed-ed, but let's be safe and replace the whole line or variable)
+if [ -f "src/utils/graphql.ts.template" ]; then
+    cp src/utils/graphql.ts.template src/utils/graphql.ts
     
-    # First, ensure we are starting fresh or replace the known default string
     sed -i "s|http://localhost:8081/graphql|$APP_URL|g" src/utils/graphql.ts
     sed -i "s|ws://localhost:8081/graphql|ws://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID|g" src/utils/graphql.ts
-    
-    # Fallback: if the file still has 8080 (from fresh checkout)
-    sed -i "s|http://localhost:8080/graphql|$APP_URL|g" src/utils/graphql.ts
-    sed -i "s|ws://localhost:8080/graphql|ws://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID|g" src/utils/graphql.ts
 fi
 
 npm install
