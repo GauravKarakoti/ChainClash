@@ -29,9 +29,6 @@ RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.40.3/install.sh | b
 WORKDIR /build
 COPY . .
 
-RUN echo "Building ChainClash binaries..." \
-    && cargo build --release --target wasm32-unknown-unknown
-
 # Verification step: Fail build early if linera is missing or broken
 RUN linera --version
 

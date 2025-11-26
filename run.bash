@@ -4,45 +4,52 @@ set -eu
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-# 1. Start Local Network
-echo "Starting Linera Local Net..."
-eval "$(linera net helper)"
-linera_spawn linera net up --with-faucet
+# --- CONFIGURATION ---
+# Use the official Linera Testnet (Conway) Faucet
+FAUCET_URL="https://faucet.testnet-conway.linera.net"
 
-# 2. Initialize Wallet
-export LINERA_FAUCET_URL=http://localhost:8080
-linera wallet init --faucet="$LINERA_FAUCET_URL"
-linera wallet request-chain --faucet="$LINERA_FAUCET_URL"
+echo "Using Linera Testnet: $FAUCET_URL"
 
-# --- NEW: Capture the Chain ID ---
+# 1. Initialize Wallet (Client Only)
+# This creates a lightweight client wallet instead of running a full local network.
+echo "Initializing Wallet..."
+linera wallet init --faucet "$FAUCET_URL"
+
+echo "Requesting Chain from Faucet..."
+linera wallet request-chain --faucet "$FAUCET_URL"
+
+# 2. Capture the Client Chain ID
+# This is the unique chain ID for this specific container instance
 CHAIN_ID=$(linera wallet show | grep -oE "[0-9a-fA-F]{64}" | head -n 1)
-echo "Using Chain ID: $CHAIN_ID"
+echo "Container Chain ID: $CHAIN_ID"
 
-# 3. Publish and Create Application
-echo "Publishing Application..."
-APP_ID=$(linera publish-and-create target/wasm32-unknown-unknown/release/contract.wasm target/wasm32-unknown-unknown/release/service.wasm)
-echo "ChainClash App ID: $APP_ID"
+# 3. Verify Application ID (Provided via ENV)
+if [ -z "${APP_ID:-}" ]; then
+    echo "ERROR: APP_ID environment variable is missing!"
+    echo "Please deploy the contract first using 'scripts/deploy.sh' locally,"
+    echo "then pass the resulting Application ID to this container."
+    exit 1
+fi
+echo "Using App ID: $APP_ID"
 
-# 4. Run Linera Service (Backend)
-# We use port 8081 to avoid conflict with the faucet on 8080
+# 4. Run Linera Service (Client Node)
+# Connects to the public testnet validators.
 echo "Starting Linera Service on http://localhost:8081..."
-# Note: Linera service usually binds to 127.0.0.1 by default. 
-# If you are running this inside Docker and accessing from the host, 
-# you might need to ensure it listens on 0.0.0.0.
-# However, your 404 error suggests it IS reachable, just the path was wrong.
+# We run in the background. The service allows the frontend to query the Testnet.
 linera service --port 8081 &
 
 # 5. Run Frontend
 echo "Setting up Frontend..."
 cd frontend
 
-# --- NEW: Update graphql.ts with the FULL Application URL ---
-# Construct the correct endpoint for your specific application
+# Construct the endpoint for the Testnet Application
 APP_URL="http://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID"
 
 if [ -f "src/utils/graphql.ts.template" ]; then
+    echo "Configuring frontend with App URL: $APP_URL"
     cp src/utils/graphql.ts.template src/utils/graphql.ts
     
+    # Update HTTP and WebSocket endpoints
     sed -i "s|http://localhost:8081/graphql|$APP_URL|g" src/utils/graphql.ts
     sed -i "s|ws://localhost:8081/graphql|ws://localhost:8081/chains/$CHAIN_ID/applications/$APP_ID|g" src/utils/graphql.ts
 fi
