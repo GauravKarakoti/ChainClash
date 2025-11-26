@@ -10,8 +10,7 @@ echo "Cleaning target directory..."
 rm -rf target
 
 # 2. Configure Environment Variables for MVP Wasm
-# Fixes "opcode 252" and "embed-bitcode" errors
-export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS="-C target-cpu=mvp -C target-feature=-bulk-memory -C target-feature=-sign-ext -C target-feature=-mutable-globals -C opt-level=z -C lto=fat -C embed-bitcode=yes"
+export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS="-C target-cpu=mvp -C target-feature=-bulk-memory -C target-feature=-sign-ext -C target-feature=-mutable-globals -C target-feature=-nontrapping-fptoint -C target-feature=-reference-types -C target-feature=-simd128"
 
 echo "Compiling with flags: $CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS"
 
@@ -71,6 +70,10 @@ done
 if [ $SUCCESS -eq 1 ]; then
     echo "Deployment complete!"
     echo "Application ID: $APPLICATION_ID"
+    
+    # [NEW] Save the App ID to the frontend environment file
+    echo "VITE_LINERA_APPLICATION_ID=$APPLICATION_ID" > frontend/.env
+    echo "Saved Application ID to frontend/.env"
 else
     echo "Deployment failed after $MAX_RETRIES attempts."
     exit 1

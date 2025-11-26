@@ -1,68 +1,92 @@
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { lineraAdapter } from '../lib/lineraAdapter';
+import { print } from 'graphql'; // Used to convert AST to string for Linera SDK
 
 export interface LineraWallet {
   address: string | undefined;
   chainId: string | undefined;
   isConnected: boolean;
-  query: (query: any, variables?: any) => Promise<any>;
   mutate: (params: { mutation: any; variables?: any }) => Promise<any>;
-  subscribe: (subscription: any, variables: any, callback: any) => Promise<any>;
 }
+
+// Testnet Conway Faucet URL
+const TESTNET_FAUCET_URL = 'https://faucet.testnet-conway.linera.net';
 
 export const useLineraWallet = () => {
   const { primaryWallet, handleLogOut } = useDynamicContext();
+  const [isAdapterConnected, setIsAdapterConnected] = useState(false);
+
+  // Initialize the Linera Adapter when Dynamic wallet connects
+  useEffect(() => {
+    const initLinera = async () => {
+      if (primaryWallet?.address) {
+        try {
+          // 1. Connect to Linera via the Adapter using the Faucet URL
+          await lineraAdapter.connect(primaryWallet, TESTNET_FAUCET_URL);
+          
+          // 2. Set the Application ID (Loaded from env, see deploy.sh step below)
+          const appId = import.meta.env.VITE_LINERA_APPLICATION_ID;
+          if (appId) {
+             await lineraAdapter.setApplication(appId);
+          } else {
+             console.warn("VITE_LINERA_APPLICATION_ID not found in environment");
+          }
+
+          setIsAdapterConnected(true);
+        } catch (err) {
+          console.error("Failed to initialize Linera Adapter:", err);
+        }
+      }
+    };
+    initLinera();
+  }, [primaryWallet]);
 
   const wallet = useMemo<LineraWallet | null>(() => {
-    if (!primaryWallet) return null;
+    if (!primaryWallet || !isAdapterConnected) return null;
 
     return {
       address: primaryWallet.address,
-      // Cast to string to ensure compatibility with the interface if strictly typed as an Enum/Union
-      chainId: primaryWallet.chain as string, 
+      // Get the actual Linera Chain ID from the adapter
+      chainId: lineraAdapter.getProvider().chainId, 
       isConnected: true,
-      
-      // Map Dynamic's connector to the interface your app expects
-      query: async (query, variables) => {
-        // Cast connector to 'any' to bypass the missing type definition for getWalletClient
-        const connector = primaryWallet.connector as any;
-        
-        // Access the underlying Linera provider
-        const provider = await connector.getWalletClient();
-        
-        // Implement the specific query call supported by the Linera SDK via Dynamic
-        return provider.request({ 
-          method: 'linera_query', 
-          params: [query, variables] 
-        });
-      },
 
+      // Handle mutations via the Linera Adapter (WASM Client)
       mutate: async ({ mutation, variables }) => {
-        const connector = primaryWallet.connector as any;
-        const provider = await connector.getWalletClient();
-        return provider.request({ 
-          method: 'linera_mutate', 
-          params: [mutation, variables] 
-        });
+        const app = lineraAdapter.getApplication();
+        if (!app) throw new Error("Linera Application not initialized");
+
+        // Convert GraphQL AST to string if necessary
+        const mutationString = typeof mutation === 'string' ? mutation : print(mutation);
+
+        // CORRECTED: Use app.query() for mutations as well. 
+        // The Linera WASM client detects the "mutation" keyword and proposes a block.
+        // We must pass a JSON string containing the query and variables.
+        const responseJson = await app.query(JSON.stringify({ 
+          query: mutationString, 
+          variables 
+        }));
+
+        // The result is a JSON string, so we must parse it
+        const response = JSON.parse(responseJson);
+        
+        // Return the data object (or handle errors if needed)
+        if (response.errors) {
+            throw new Error(response.errors[0].message);
+        }
+        
+        return response.data;
       },
       
-      subscribe: async (subscription, variables, callback) => {
-         const connector = primaryWallet.connector as any;
-         const provider = await connector.getWalletClient();
-         // Subscription logic depends on the specific Linera Provider API
-         return provider.request({
-            method: 'linera_subscribe',
-            params: [subscription, variables, callback]
-         });
-      }
+      // Note: Queries and subscriptions are handled by Apollo in your setup, 
+      // but mutations require the wallet signature via the Adapter.
     };
-  }, [primaryWallet]);
+  }, [primaryWallet, isAdapterConnected]);
 
   return {
     wallet,
-    loading: false, // Dynamic handles loading state internally mostly
+    loading: !isAdapterConnected && !!primaryWallet,
     error: null,
-    connectWallet: () => {}, // DynamicWidget handles this
     disconnectWallet: handleLogOut,
   };
 };
